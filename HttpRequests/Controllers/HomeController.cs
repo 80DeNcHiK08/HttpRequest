@@ -2,14 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using HttpRequests.Models;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace HttpRequests.Controllers
 {
-
     public class HomeController : Controller
     {
         private IHttpContextAccessor _accessor;
         public IRequestRepository _requestItems { get; set; }
+        protected string datetime = DateTime.Now.ToString();
 
         public HomeController(IRequestRepository requestItems, IHttpContextAccessor accessor)
         {
@@ -22,8 +23,8 @@ namespace HttpRequests.Controllers
             return View();
         }
 
-        [HttpGet]
-        [Route("request/getall")]
+        [Route("Home/GetAll",
+            Name ="getall")]
         public IEnumerable<RequestItem> GetAll()
         {
             var resultpath = string.Join("/", new[]
@@ -32,12 +33,14 @@ namespace HttpRequests.Controllers
                 RouteData.Values["controller"],
                 RouteData.Values["action"]
             });
-            Logger.Log(Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
+            Logger.Log(datetime, Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
+
             return _requestItems.GetAll();
         }
 
-        [HttpGet("{id}", Name = "GetTodo")]
-        public IActionResult GetById(string id)
+        [Route("Home/Create",
+            Name ="create")]
+        public IActionResult Create(RequestItem item)
         {
             var resultpath = string.Join("/", new[]
             {
@@ -45,102 +48,66 @@ namespace HttpRequests.Controllers
                 RouteData.Values["controller"],
                 RouteData.Values["action"]
             });
-            Logger.Log(Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
-            var item = _requestItems.Find(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-            return new ObjectResult(item);
-        }
+            Logger.Log(datetime, Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
 
-        [HttpPost]
-        public IActionResult Create([FromBody] RequestItem item)
-        {
-            var resultpath = string.Join("/", new[]
-            {
-                Request.Host,
-                RouteData.Values["controller"],
-                RouteData.Values["action"]
-            });
-            Logger.Log(Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
-            if (item == null)
+            if (item.RequestData == null)
             {
                 return BadRequest();
             }
             _requestItems.Add(item);
-            return CreatedAtRoute(Request.Method, new { id = item.RequestKey }, item);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult Update(string id, [FromBody] RequestItem item)
-        {
-            var resultpath = string.Join("/", new[]
-            {
-                Request.Host,
-                RouteData.Values["controller"],
-                RouteData.Values["action"]
-            });
-            Logger.Log(Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
-            if (item == null || item.RequestKey != id)
-            {
-                return BadRequest();
-            }
-
-            var todo = _requestItems.Find(id);
-            if (todo == null)
-            {
-                return NotFound();
-            }
-
-            _requestItems.Update(item);
             return new NoContentResult();
         }
 
-        [HttpPatch("{id}")]
-        public IActionResult Update([FromBody] RequestItem item, string id)
+        [Route("Home/Update",
+            Name ="update")]
+        public IActionResult Update(RequestItem item, string NewKey)
         {
+            Request.Method = "PUT";
             var resultpath = string.Join("/", new[]
             {
                 Request.Host,
                 RouteData.Values["controller"],
                 RouteData.Values["action"]
             });
-            Logger.Log(Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
-            if (item == null)
+            Logger.Log(datetime, Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
+
+            if (item.RequestKey == null || NewKey == null)
             {
                 return BadRequest();
             }
-
-            var todo = _requestItems.Find(id);
-            if (todo == null)
+            var toUpdate = _requestItems.Find(item.RequestKey);
+            if (toUpdate == null)
             {
                 return NotFound();
             }
 
-            item.RequestKey = todo.RequestKey;
+            //item.RequestKey = toUpdate.RequestKey;
+            toUpdate.RequestKey = NewKey;
 
-            _requestItems.Update(item);
+            _requestItems.Update(toUpdate);
             return new NoContentResult();
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        [Route("Home/Delete",
+            Name ="delete")]
+        public IActionResult Delete(string key)
         {
+            Request.Method = "DELETE";
             var resultpath = string.Join("/", new[]
             {
                 Request.Host,
                 RouteData.Values["controller"],
                 RouteData.Values["action"]
             });
-            Logger.Log(Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
-            var todo = _requestItems.Find(id);
+            Logger.Log(datetime, Request.Method, _accessor.HttpContext.Connection.LocalIpAddress.ToString(), resultpath);
+
+            var todo = _requestItems.Find(key);
             if (todo == null)
             {
                 return NotFound();
             }
 
-            _requestItems.Remove(id);
+            _requestItems.Remove(key);
             return new NoContentResult();
         }
     }

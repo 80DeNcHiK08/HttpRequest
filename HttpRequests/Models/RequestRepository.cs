@@ -8,10 +8,11 @@ namespace HttpRequests.Models
     {
         private static ConcurrentDictionary<string, RequestItem> _rqItems =
               new ConcurrentDictionary<string, RequestItem>();
+        public Random random = new Random();
 
         public RequestRepository()
         {
-            Add(new RequestItem { Name = "Initialized item"});
+            Add(new RequestItem { RequestData = "Initialized item"});
         }
 
         public IEnumerable<RequestItem> GetAll()
@@ -21,7 +22,8 @@ namespace HttpRequests.Models
 
         public void Add(RequestItem item)
         {
-            item.RequestKey = Guid.NewGuid().ToString();
+            item.RequestKey = random.Next(0, 100).ToString();
+            //item.RequestKey = Guid.NewGuid().ToString();
             _rqItems[item.RequestKey] = item;
         }
 

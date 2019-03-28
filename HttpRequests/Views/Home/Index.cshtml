@@ -1,6 +1,25 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿<div>
+    <p>Click 'Get All', to see existing objects</p>
+    <form method="get" asp-route="getall">
+        <input type="submit" value="Get All" />
+    </form>
+    <p>Type any word and click 'Create', to check existing objects</p>
+    <form method="post" asp-route="create">
+        <input type="text" name="RequestData" value="" />
+        <input type="submit" value="Create">
+    </form>
+    <p>Type existing id from list to first field, then type new id to the second,<br> then click 'Update' button</p>
+    <form method="put" asp-route="update">
+        <input type="text" name="RequestKey" value="" />
+        <input type="text" name="NewKey" value="" />
+        <input type="submit" value="Update">
+    </form>
+    <p>Type object id from list, then click 'Delete' button</p>
+    <form method="delete" asp-route="delete">
+        <input type="text" name="key" value="" />
+        <input type="submit" value="Delete" />
+    </form>
 
-<button asp-route="request/getall">Get</button>
+    *You can check request log in RequestLog.txt
+</div>
 
